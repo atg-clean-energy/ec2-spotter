@@ -119,24 +119,26 @@ cat >/usr/lib/systemd/systemd <<EOF
 #!/bin/sh
 
 if [ "x\$1" == "x--switched-root" ]; then
-  #xfs_admin -L old-root /dev/nvme0n1p1
-  #echo Relabeling old root device exited with \$? > /dev/kmsg
-  #xfs_admin -L '/' /dev/nvme1n1p1
-  #echo Relabeling new root device exited with \$? > /dev/kmsg
-  echo Current mount situation is \$(mount) > /dev/kmsg
-  umount /
-  echo Unmounted root with exit code \$? > /dev/kmsg
 
-  mount $DEVICE /
+  mkdir -p /permaroot
+  mount /dev/nvme1n1p1 /permaroot
   echo Remounted permaroot with exit code \$? > /dev/kmsg
+
+  cd /permaroot
+  unshare -m
+
+  for dir in /dev /proc /sys /run; do
+    echo "Moving mounted file system \${dir} to .\$dir." > /dev/kmsg
+    mount --move \${dir} .\${dir}
+  done
+
+  echo "About to chroot in 5 secs..."
+  sleep 5
+  exec /sbin/chroot . /usr/lib/systemd/systemd \$@
   
-  echo Updated mount situation is \$(mount) > /dev/kmsg
-
-  echo About to run systemd init with args \$@ > /dev/kmsg
-  exec /usr/lib/systemd/systemd.real "\$@"
 else
-  exec /usr/lib/systemd/systemd.real "\$@"
+  exec /usr/lib/systemd/systemd.real \$@
 fi
-
 EOF
 chmod +x /usr/lib/systemd/systemd
+reboot
