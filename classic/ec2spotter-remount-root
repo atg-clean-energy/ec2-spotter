@@ -123,22 +123,17 @@ if [ "x\$1" == "x--switched-root" ]; then
   #echo Relabeling old root device exited with \$? > /dev/kmsg
   #xfs_admin -L '/' /dev/nvme1n1p1
   #echo Relabeling new root device exited with \$? > /dev/kmsg
-  echo Current mount situation is \$\(mount\) > /dev/kmsg
-  mkdir -p $NEWMNT
-  mount $DEVICE $NEWMNT
-  cd $NEWMNT
-  mkdir -p $OLDMNT
-  pivot_root . ./$OLDMNT
+  echo Current mount situation is \$(mount) > /dev/kmsg
+  umount /
+  echo Unmounted root with exit code \$? > /dev/kmsg
 
-  for dir in /dev /proc /sys /run; do
-     echo Moving mounted file system old-root\${dir} to \$dir. > /dev/kmsg
-     mount --move ./old-root\${dir} \${dir}
-  done
+  mount $DEVICE /
+  echo Remounted permaroot with exit code \$? > /dev/kmsg
+  
   echo Updated mount situation is \$(mount) > /dev/kmsg
 
-  echo About to run exec chroot /usr/lib/systemd/systemd \$@ > /dev/kmsg
-
-  exec chroot . /usr/lib/systemd/systemd "\$@"
+  echo About to run systemd init with args \$@ > /dev/kmsg
+  exec /usr/lib/systemd/systemd.real "\$@"
 else
   exec /usr/lib/systemd/systemd.real "\$@"
 fi
