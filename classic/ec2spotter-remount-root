@@ -141,4 +141,4 @@ else
 fi
 EOF
 chmod +x /usr/lib/systemd/systemd
-reboot
+#reboot
