@@ -113,28 +113,21 @@ mount $DEVICE /permaroot
 umount $DEVICE
 xfs_repair $DEVICE
 
-xfs_admin -L \x2f $DEVICE
-xfs_admin -L oldroot /dev/nvme0n1p1
-
 #
 # point of no return... 
 # modify /sbin/init on the ephemeral volume to chain-load from the persistent EBS volume, and then reboot.
 #
-#mv /sbin/init /sbin/init.backup
-#cat >/sbin/init <<EOF
-##!/bin/sh
-#mount $DEVICE $NEWMNT
-#[ ! -d $NEWMNT/$OLDMNT ] && mkdir -p $NEWMNT/$OLDMNT
-#   
-#cd $NEWMNT
-#unshare -m 
-#pivot_root . ./$OLDMNT
-#   
-#for dir in /dev /proc /sys /run; do
-#   echo "Moving mounted file system ${OLDMNT}\${dir} to \$dir."
-#   mount --move ./${OLDMNT}\${dir} \${dir}
-#done
-#exec chroot . /sbin/init
+
+mv /sbin/init /sbin/init.systemd
+cat >/sbin/init <<EOF
+#!/bin/sh
+xfs_admin -L old-root /dev/nvme0n1p1
+xfs_admin -L '/' /dev/nvme1n1p1
+
+exec /sbin/init.systemd "\$@"
+EOF
+chmod +x /sbin/init
+
 #EOF
 #chmod +x /sbin/init
 #shutdown -r now
