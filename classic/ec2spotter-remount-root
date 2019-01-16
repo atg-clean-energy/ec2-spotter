@@ -149,7 +149,7 @@ INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
   echo "Waiting for cloud init to finish"
   sleep 10
 done
-echo "Rebooting in 5 seconds to get to chroot" > /dev/kmsg
+echo "Rebooting in 5 seconds to get to chroot"
 sleep 5
 #reboot
 echo "Would have rebooted") > /dev/kmsg
