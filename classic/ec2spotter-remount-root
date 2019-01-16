@@ -148,6 +148,8 @@ INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
   sleep 10
 done
 echo "Rebooting in 5 seconds to get to chroot" > /dev/kmsg
-reboot) &
+sleep 5
+#reboot
+echo "Would have rebooted") &
 
 
