@@ -9,6 +9,14 @@ then
   exit -1
 fi
 
+ROOT_LABEL="$(findmnt / -o label -n)"
+if [ $ROOT_LABEL == "permaroot" ]; then 
+  echo "Root label is permaroot which means we are chrooted and can exit. Dropping out now" 
+	exit 0 
+else 
+	echo "Root label is $ROOT_LABEL which means we need to set up and reboot for chroot" 
+fi
+
 if [ "x$2" = "x" ]; then echo "missing volume name"; exit -1; fi
 
 ROOT_VOL_NAME=$2
@@ -149,7 +157,7 @@ done
 echo "Rebooting in 5 seconds to get to chroot"
 sleep 5
 
-rsync -av /var/lib/cloud/ /permaroot/var/lib/cloud/
+rsync -av /var/log/cloud/ /permaroot/var/log/cloud/
 umount $DEVICE
 xfs_repair $DEVICE
 reboot
