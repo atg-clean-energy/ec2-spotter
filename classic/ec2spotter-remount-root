@@ -110,10 +110,6 @@ NEWMNT=/permaroot
 OLDMNT=old-root
 mkdir -p $NEWMNT
 mount -o nouuid $DEVICE /permaroot
-rsync -av /var/lib/cloud/ /permaroot/var/lib/cloud/
-umount $DEVICE
-xfs_repair $DEVICE
-
 
 mv /usr/lib/systemd/systemd /usr/lib/systemd/systemd.real
 cat >/usr/lib/systemd/systemd <<EOF
@@ -152,8 +148,13 @@ INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
 done
 echo "Rebooting in 5 seconds to get to chroot"
 sleep 5
+
+rsync -av /var/lib/cloud/ /permaroot/var/lib/cloud/
+umount $DEVICE
+xfs_repair $DEVICE
 #reboot
-echo "Would have rebooted") > /dev/kmsg
+echo "Would have rebooted"
+) > /dev/kmsg
 EOF
 
 nohup bash /tmp/cloud-init-wait.sh &
