@@ -110,6 +110,7 @@ NEWMNT=/permaroot
 OLDMNT=old-root
 mkdir -p $NEWMNT
 mount -o nouuid $DEVICE /permaroot
+rsync -av /var/lib/cloud/ /permaroot/var/lib/cloud/
 umount $DEVICE
 xfs_repair $DEVICE
 
