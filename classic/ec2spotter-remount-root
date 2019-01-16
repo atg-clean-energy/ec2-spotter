@@ -152,8 +152,8 @@ sleep 5
 rsync -av /var/lib/cloud/ /permaroot/var/lib/cloud/
 umount $DEVICE
 xfs_repair $DEVICE
-#reboot
-echo "Would have rebooted"
+reboot
+#echo "Would have rebooted"
 ) > /dev/kmsg
 EOF
 
