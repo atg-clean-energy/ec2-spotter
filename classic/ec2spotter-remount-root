@@ -143,13 +143,13 @@ EOF
 chmod +x /usr/lib/systemd/systemd
 
 INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
-(while ! test -d "/var/lib/cloud/instances/$INSTANCE_ID"; do
+nohup (while ! test -d "/var/lib/cloud/instances/$INSTANCE_ID"; do
   echo "Waiting for cloud init to finish"
   sleep 10
 done
 echo "Rebooting in 5 seconds to get to chroot" > /dev/kmsg
 sleep 5
 #reboot
-echo "Would have rebooted") &
+echo "Would have rebooted") > /dev/kmsg &
 
 
