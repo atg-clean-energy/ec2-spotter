@@ -148,7 +148,15 @@ if [ "x\$1" == "x--switched-root" ]; then
     if ! [ -f /usr/sbin/chroot ]; then
       echo "No /usr/sbin/chroot present. Hmmm" > /old-root/dev/kmsg
     else 
-      echo "/usr/sbin/chroot is present. Booting without chroot anyway" > /old-root/dev/kmsg
+      echo "/usr/sbin/chroot is present." > /old-root/dev/kmsg
+      
+      
+      for dir in /proc /sys /run /dev; do
+        mount --move /old-root\${dir} \${dir} > /old-root/dev/kmsg
+      done
+      
+      sleep 20
+      exec /usr/lib/systemd/systemd \$@
     fi
     
     cd ./old-root
