@@ -133,18 +133,27 @@ if [ "x\$1" == "x--switched-root" ]; then
 
   cd /permaroot
   
+  
   /usr/sbin/pivot_root . ./old-root 2> /run/pivot-root-err.txt
   PIVOT_ROOT_STATUS=\$?
   if [ -f /old-root/dev/kmsg ]; then
     echo Pivoted root to permaroot with exit code \$PIVOT_ROOT_STATUS > /old-root/dev/kmsg
+    
+    if ! [ -f /usr/sbin/chroot ]; then
+      echo "No /usr/sbin/chroot present. Hmmm" > /old-root/dev/kmsg
+      exec /usr/lib/systemd/systemd.real \$@
+    fi
+    
   else 
     echo Pivot root failed with status \$PIVOT_ROOT_STATUS > /dev/kmsg
     cat /run/pivot-root-err.txt > /dev/kmsg
     exec /usr/lib/systemd/systemd.real \$@
   fi
 
+  cd /
+
   for dir in /dev /proc /sys /run; do
-    mount --move ./old-root\${dir} .\${dir}
+    mount --move /old-root\${dir} \${dir}
   done
 
   exec /usr/sbin/chroot . /usr/lib/systemd/systemd \$@
@@ -167,7 +176,7 @@ cp /etc/hostname /permaroot/etc/hostname
 
 umount $DEVICE
 xfs_repair $DEVICE
-reboot
+#reboot
 ) > /dev/kmsg
 EOF
 
