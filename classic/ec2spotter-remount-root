@@ -120,6 +120,8 @@ OLDMNT=old-root
 mkdir -p $NEWMNT
 mount -o nouuid $DEVICE /permaroot
 
+mkdir -p /permaroot/old-root
+
 mv /usr/lib/systemd/systemd /usr/lib/systemd/systemd.real
 cat >/usr/lib/systemd/systemd <<EOF
 #!/bin/sh
@@ -130,10 +132,18 @@ if [ "x\$1" == "x--switched-root" ]; then
   echo Remounted permaroot with exit code \$? > /dev/kmsg
 
   cd /permaroot
+  
+  pivot_root . ./old-root
+  PIVOT_ROOT_STATUS=\$?
+  if [ -f /old-root/dev/kmsg ]; then
+    echo Pivoted root to permaroot with exit code \$PIVOT_ROOT_STATUS > /old-root/dev/kmsg
+  else 
+    echo Pivot root failed with status \$PIVOT_ROOT_STATUS > /dev/kmsg
+    exec /usr/lib/systemd/systemd.real \$@
+  fi
 
   for dir in /dev /proc /sys /run; do
-    echo "Moving mounted file system \${dir} to .\$dir." > /dev/kmsg
-    mount --move \${dir} .\${dir}
+    mount --move ./old-root\${dir} .\${dir}
   done
 
   exec chroot . /usr/lib/systemd/systemd \$@
