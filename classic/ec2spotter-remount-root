@@ -152,10 +152,16 @@ if [ "x\$1" == "x--switched-root" ]; then
     fi
     
     cd ./old-root
-    /old-root/usr/sbin/pivot_root . ./permaroot
+    usr/sbin/pivot_root . ./permaroot 2> /old-root/run/repivot-root-error.txt
+    
     REPIVOT_ROOT=\$?
-    echo "Repivot root exited with \$REPIVOT_ROOT" > /dev/kmsg
-    echo "Repivot root exited with \$REPIVOT_ROOT" > /old-root/dev/kmsg
+    if [ "\$REPIVOT_ROOT" == "0" ]; then
+      echo "Repivot root exited with \$REPIVOT_ROOT" > /dev/kmsg
+    else
+      echo "Repivot root exited with \$REPIVOT_ROOT" > /old-root/dev/kmsg
+      cat /old-root/run/repivot-root-error.txt > /old-root/dev/kmsg
+    fi
+    
     sleep 20
     
     if [ -f /usr/lib/systemd/systemd.real ]; then
