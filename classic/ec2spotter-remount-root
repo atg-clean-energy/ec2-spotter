@@ -135,24 +135,30 @@ if [ "x\$1" == "x--switched-root" ]; then
     echo Mounted $DEVICE_UUID successfully > /dev/kmsg
   else 
     echo Didnt mount $DEVIDE_UUID successfully > /dev/kmsg
+    exec /usr/lib/systemd/systemd.real \$@
   fi
 
   cd /permaroot
   
-  /usr/sbin/pivot_root . ./old-root 2> /run/pivot-root-err.txt
+  /usr/sbin/pivot_root . ./old-root
   PIVOT_ROOT_STATUS=\$?
-  if [ -f /old-root/dev/kmsg ]; then
+  if [ -f /old-root/usr/lib/systemd/systemd.real ]; then
     echo Pivoted root to permaroot with exit code \$PIVOT_ROOT_STATUS > /old-root/dev/kmsg
     
     if ! [ -f /usr/sbin/chroot ]; then
       echo "No /usr/sbin/chroot present. Hmmm" > /old-root/dev/kmsg
     else 
-      echo "/usr/sbin/chroot is present. Booting without chroot" > /old-root/dev/kmsg
+      echo "/usr/sbin/chroot is present. Booting without chroot anyway" > /old-root/dev/kmsg
     fi
     
     cd ./old-root
-    /usr/sbin/pivot_root . ./permaroot
-    exec /usr/lib/systemd/systemd.real \$@
+    /old-root/usr/sbin/pivot_root . ./permaroot
+    if [ -f /usr/lib/systemd/systemd.real ]; then
+      exec /usr/lib/systemd/systemd.real \$@
+    else
+      exec /usr/lib/systemd/systemd \$@
+    fi
+    
     
   else 
     echo Pivot root failed with status \$PIVOT_ROOT_STATUS > /dev/kmsg
