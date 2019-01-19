@@ -131,6 +131,12 @@ if [ "x\$1" == "x--switched-root" ]; then
   mount UUID=$DEVICE_UUID /permaroot
   echo Remounted permaroot with exit code \$? > /dev/kmsg
 
+  if [ -f /permaroot/usr/sbin/chroot ]; then
+    echo Mounted $DEVICE_UUID successfully > /dev/kmsg
+  else 
+    echo Didnt mount $DEVIDE_UUID successfully > /dev/kmsg
+  fi
+
   cd /permaroot
   
   /usr/sbin/pivot_root . ./old-root 2> /run/pivot-root-err.txt
@@ -145,7 +151,7 @@ if [ "x\$1" == "x--switched-root" ]; then
     fi
     
     cd ./old-root
-    /usr/sbin/pivot_root . /permaroot
+    /usr/sbin/pivot_root . ./permaroot
     exec /usr/lib/systemd/systemd.real \$@
     
   else 
