@@ -167,7 +167,7 @@ cp /etc/hostname /permaroot/etc/hostname
 
 umount $DEVICE
 xfs_repair $DEVICE
-#reboot
+reboot
 ) > /dev/kmsg
 EOF
 
