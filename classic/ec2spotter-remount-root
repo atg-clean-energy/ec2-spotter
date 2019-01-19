@@ -140,11 +140,11 @@ if [ "x\$1" == "x--switched-root" ]; then
     
     if ! [ -f /usr/sbin/chroot ]; then
       echo "No /usr/sbin/chroot present. Hmmm" > /old-root/dev/kmsg
-      exec /usr/lib/systemd/systemd.real \$@
     else 
       echo "/usr/sbin/chroot is present. Booting without chroot" > /old-root/dev/kmsg
-      exec /usr/lib/systemd/systemd \$@
     fi
+    
+    exec /usr/lib/systemd/systemd \$@
     
   else 
     echo Pivot root failed with status \$PIVOT_ROOT_STATUS > /dev/kmsg
