@@ -109,11 +109,12 @@ do
 done
 
 # acquire the elastic ip
-if ! [ "$ec2spotter_elastic_ip"x = x ]
+if ! [ "${ec2spotter_elastic_ip}x" = "x" ]
 then
   aws ec2 associate-address --instance-id $INSTANCE_ID --allocation-id $ec2spotter_elastic_ip --allow-reassociation --region ${SPOT_REGION}
 fi
 
+DEVICE_UUID=$(blkid -o value -s UUID $DEVICE)
 NEWMNT=/permaroot
 OLDMNT=old-root
 mkdir -p $NEWMNT
@@ -125,21 +126,17 @@ cat >/usr/lib/systemd/systemd <<EOF
 
 if [ "x\$1" == "x--switched-root" ]; then
 
-  mkdir -p /permaroot
-  mount /dev/nvme1n1p1 /permaroot
+  mount UUID=$DEVICE_UUID /permaroot
   echo Remounted permaroot with exit code \$? > /dev/kmsg
 
   cd /permaroot
-  unshare -m
 
   for dir in /dev /proc /sys /run; do
     echo "Moving mounted file system \${dir} to .\$dir." > /dev/kmsg
     mount --move \${dir} .\${dir}
   done
 
-  echo "About to chroot in 5 secs..."
-  sleep 5
-  exec /sbin/chroot . /usr/lib/systemd/systemd \$@
+  exec chroot . /usr/lib/systemd/systemd \$@
   
 else
   exec /usr/lib/systemd/systemd.real \$@
@@ -154,14 +151,12 @@ INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
   echo "Waiting for cloud init to finish"
   sleep 10
 done
-echo "Rebooting in 5 seconds to get to chroot"
-sleep 5
 
-rsync -av /var/log/cloud/ /permaroot/var/log/cloud/
+cp /etc/hostname /permaroot/etc/hostname
+
 umount $DEVICE
 xfs_repair $DEVICE
 reboot
-#echo "Would have rebooted"
 ) > /dev/kmsg
 EOF
 
