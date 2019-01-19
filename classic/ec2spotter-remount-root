@@ -133,12 +133,13 @@ if [ "x\$1" == "x--switched-root" ]; then
 
   cd /permaroot
   
-  pivot_root . ./old-root
+  /usr/sbin/pivot_root . ./old-root 2> /run/pivot-root-err.txt
   PIVOT_ROOT_STATUS=\$?
   if [ -f /old-root/dev/kmsg ]; then
     echo Pivoted root to permaroot with exit code \$PIVOT_ROOT_STATUS > /old-root/dev/kmsg
   else 
     echo Pivot root failed with status \$PIVOT_ROOT_STATUS > /dev/kmsg
+    cat /run/pivot-root-err.txt > /dev/kmsg
     exec /usr/lib/systemd/systemd.real \$@
   fi
 
