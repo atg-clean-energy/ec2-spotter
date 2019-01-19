@@ -144,7 +144,7 @@ if [ "x\$1" == "x--switched-root" ]; then
       echo "/usr/sbin/chroot is present. Booting without chroot" > /old-root/dev/kmsg
     fi
     
-    exec /usr/lib/systemd/systemd \$@
+    
     
   else 
     echo Pivot root failed with status \$PIVOT_ROOT_STATUS > /dev/kmsg
@@ -157,8 +157,8 @@ if [ "x\$1" == "x--switched-root" ]; then
   for dir in /dev /proc /sys /run; do
     mount --move /old-root\${dir} \${dir}
   done
-
-  exec /usr/sbin/chroot . /usr/lib/systemd/systemd \$@
+  exec /usr/lib/systemd/systemd \$@
+  #exec /usr/sbin/chroot . /usr/lib/systemd/systemd \$@
   
 else
   exec /usr/lib/systemd/systemd.real \$@
