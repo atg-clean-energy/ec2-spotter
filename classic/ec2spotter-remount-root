@@ -152,14 +152,14 @@ if [ "x\$1" == "x--switched-root" ]; then
     fi
     
     cd ./old-root
-    usr/sbin/pivot_root . ./permaroot 2> /old-root/run/repivot-root-error.txt
+    usr/sbin/pivot_root . ./permaroot 2> ./run/repivot-root-error.txt
     
     REPIVOT_ROOT=\$?
     if [ "\$REPIVOT_ROOT" == "0" ]; then
       echo "Repivot root exited with \$REPIVOT_ROOT" > /dev/kmsg
     else
       echo "Repivot root exited with \$REPIVOT_ROOT" > /old-root/dev/kmsg
-      cat /old-root/run/repivot-root-error.txt > /old-root/dev/kmsg
+      cat ./run/repivot-root-error.txt > /old-root/dev/kmsg
     fi
     
     sleep 20
